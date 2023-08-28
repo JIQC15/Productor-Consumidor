@@ -3,20 +3,16 @@ package Backend;
 public class MainTemporal {
 
     public static void main(String[] args) {
-        Recurso recursoCompartido = new Recurso(10); // Capacidad máxima del recurso
+        int capacidadMaxima = 4;
+        Recurso recursoCompartido = new Recurso(capacidadMaxima);
 
-        //Productor
         Productor productor = new Productor();
         productor.setNombre("Productor");
-        productor.setTurno(1);
         productor.setVelocidadProduccion(1000);
         productor.setRecursoCompartido(recursoCompartido);
 
-        //Consumidor
         Consumidor consumidor = new Consumidor();
         consumidor.setNombre("Consumidor");
-        consumidor.setTurno(1);
-        consumidor.setVelocidadConsumo(1500);
         consumidor.setRecursoCompartido(recursoCompartido);
 
         Thread hiloProductor = new Thread(productor);
@@ -35,5 +31,12 @@ public class MainTemporal {
         // Detener los hilos
         hiloProductor.interrupt();
         hiloConsumidor.interrupt();
+
+        try {
+            hiloProductor.join();
+            hiloConsumidor.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

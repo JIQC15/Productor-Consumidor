@@ -5,37 +5,19 @@ import java.util.logging.Logger;
 
 public class Productor implements Runnable {
 
-    //Variables
-    private String nombre;
-    private int turno;
-    private static int recurso;
+    // Variables
+    private String nombre = "Productor";
     private int velocidadProduccion;
     private Recurso recursoCompartido;
-    private static Object estado = new Object();
+    private boolean productorDespierto = true;
 
-    //Setters y Getters
+    //Setters / Getters
     public String getNombre() {
         return nombre;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getTurno() {
-        return turno;
-    }
-
-    public void setTurno(int turno) {
-        this.turno = turno;
-    }
-
-    public int getRecurso() {
-        return recurso;
-    }
-
-    public void setRecurso(int recurso) {
-        this.recurso = recurso;
     }
 
     public int getVelocidadProduccion() {
@@ -54,54 +36,55 @@ public class Productor implements Runnable {
         this.recursoCompartido = recursoCompartido;
     }
 
-    //Metodos
-    private int generarElemento() {
-        // Lógica para generar un elemento real si es necesario
-        return recurso;
-    }
-
+    // Métodos
     @Override
     public void run() {
-        while (true) {
-            if (nombre == "Productor") {
-                producitElemento();
-            } else {
-                try {
-                    Thread.sleep(velocidadProduccion);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        while (!Thread.currentThread().isInterrupted()) {
+            if ("Productor".equals(nombre)) {
+                producirElemento();
             }
-            // Generar un elemento (simplemente usando el valor de recurso para este ejemplo)
-//            int elemento = generarElemento();
-
-            // Producir el elemento en el recurso compartido
-//            recursoCompartido.producir(elemento);
-//            producirElemento(elemento);
-            // Actualizar atributos
-            // Esperar un tiempo antes de producir el siguiente elemento
-//            try {
-//                Thread.sleep(velocidadProduccion);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 
-    private void producitElemento() {
-        synchronized (estado) {
-            if (getRecurso() == 0) {
-                setRecurso(10);
-                System.out.println("Soy el cocinero y quedan " + getRecurso() + ".");
-                estado.notifyAll();
+    private void producirElemento() {
+        synchronized (recursoCompartido) {
+            while (!recursoCompartido.estaVacio()) {
+                if (!recursoCompartido.estaVacio()) {
+                    try {
+                        productorDormido();
+                        System.out.println("Productor Dormido");
+                        recursoCompartido.wait();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        Logger.getLogger(Productor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else if (recursoCompartido.estaVacio()) {
+                    productorDespierto();
+                    System.out.println("Productor Despierto!!!");
+                    while (productorDespierto && recursoCompartido.espacioDisponible()) {
+                        recursoCompartido.producir();
+                        System.out.println("Productor produjo: " + 1);
+                        recursoCompartido.notifyAll();
+                        if (!recursoCompartido.espacioDisponible()) {
+                            productorDormido();
+                            System.out.println("Productor Dormido!!!");
+                        }
+                    }
+                }
             }
+        }
+    }
 
-            try {
-                estado.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Productor.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    public void productorDormido() {
+        synchronized (recursoCompartido) {
+            productorDespierto = false;
+        }
+    }
 
+    public void productorDespierto() {
+        synchronized (recursoCompartido) {
+            productorDespierto = true;
+            recursoCompartido.notifyAll();
         }
     }
 

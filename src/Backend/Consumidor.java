@@ -1,27 +1,22 @@
-
 package Backend;
 
-public class Consumidor implements Runnable{
-    private String nombre;
-    private int turno;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Consumidor implements Runnable {
+
+    private String nombre = "Consumidor";
     private int velocidadConsumo;
     private Recurso recursoCompartido;
+    private static Object estado = new Object();
 
-    //Atributos
+    //Setters/Getters
     public String getNombre() {
         return nombre;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getTurno() {
-        return turno;
-    }
-
-    public void setTurno(int turno) {
-        this.turno = turno;
     }
 
     public int getVelocidadConsumo() {
@@ -43,25 +38,36 @@ public class Consumidor implements Runnable{
     //Metodos
     @Override
     public void run() {
-        while (true) {
-            // Consumir un elemento del recurso compartido
-            int elemento = recursoCompartido.consumir();
-            
-            // Realizar acciones con el elemento (puedes mostrarlo, procesarlo, etc.)
-            consumirElemento(elemento);
-            
-
-            // Esperar un tiempo antes de consumir el siguiente elemento
-            try {
-                Thread.sleep(velocidadConsumo);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while (!Thread.currentThread().isInterrupted()) {
+            if ("Consumidor".equals(nombre)) {
+                consumirElementosHastaVacio();
+                dormirHastaProductorDespierto();
             }
         }
     }
-
-    private void consumirElemento(int elemento) {
-        // Lógica para consumir un elemento real si es necesario.
-        System.out.println(nombre + " consumio el elemento: " + elemento);
+    
+    private void consumirElementosHastaVacio() {
+        synchronized (estado) {
+            while (!recursoCompartido.estaVacio()) {
+                int elemento = recursoCompartido.consumir();
+                System.out.println("Consumidor consumió: " + elemento);
+                estado.notifyAll();
+            }
+        }
+    }
+    
+    private void dormirHastaProductorDespierto() {
+        synchronized (recursoCompartido) {
+            while (recursoCompartido.hayElementos() || recursoCompartido.espacioDisponible()) {
+                try {
+                    recursoCompartido.wait();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    Logger.getLogger(Consumidor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 }
+
+
