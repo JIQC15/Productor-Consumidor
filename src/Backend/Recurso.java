@@ -1,8 +1,11 @@
+
 package Backend;
 import java.util.Queue;
 import java.util.LinkedList;
 
 public class Recurso {
+
+    private int contador = 1;
 
     private Queue<Integer> cola = new LinkedList<>();
     private int capacidadMaxima;
@@ -11,28 +14,29 @@ public class Recurso {
         this.capacidadMaxima = capacidadMaxima;
     }
 
-    public synchronized void producir(int elemento) {
+    public  int producir() {
         while (cola.size() >= capacidadMaxima) {
-            try {
-                wait(); // Esperar si la cola está llena
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         }
-        cola.offer(elemento); // Agregar el elemento a la cola
-        notifyAll(); // Notificar a los consumidores que hay elementos disponibles
+        cola.offer(contador); // Agregar el elemento a la cola
+        return contador++;
     }
 
-    public synchronized int consumir() {
+    public int consumir() {
         while (cola.isEmpty()) {
-            try {
-                wait(); // Esperar si la cola está vacía
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         }
         int elemento = cola.poll(); // Tomar el primer elemento de la cola
-        notifyAll(); // Notificar a los productores que hay espacio disponible
         return elemento;
+    }
+
+    public  boolean espacioDisponible() {
+        return cola.size() < capacidadMaxima;
+    }
+
+    public  boolean hayElementos() {
+        return !cola.isEmpty();
+    }
+
+    public  boolean estaVacio() {
+        return cola.isEmpty();
     }
 }

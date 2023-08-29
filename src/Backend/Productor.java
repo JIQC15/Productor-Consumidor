@@ -5,37 +5,19 @@ import java.util.logging.Logger;
 
 public class Productor implements Runnable {
 
-    //Variables
-    private String nombre;
-    private int turno;
-    private static int recurso;
+    // Variables
+    private String nombre = "Productor";
     private int velocidadProduccion;
     private Recurso recursoCompartido;
-    private static Object estado = new Object();
+    private boolean productorDespierto = true;
 
-    //Setters y Getters
+    //Setters / Getters
     public String getNombre() {
         return nombre;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getTurno() {
-        return turno;
-    }
-
-    public void setTurno(int turno) {
-        this.turno = turno;
-    }
-
-    public int getRecurso() {
-        return recurso;
-    }
-
-    public void setRecurso(int recurso) {
-        this.recurso = recurso;
     }
 
     public int getVelocidadProduccion() {
@@ -54,55 +36,54 @@ public class Productor implements Runnable {
         this.recursoCompartido = recursoCompartido;
     }
 
-    //Metodos
-    private int generarElemento() {
-        // Lógica para generar un elemento real si es necesario
-        return recurso;
-    }
-
+    // Métodos
     @Override
     public void run() {
         while (true) {
-            if (nombre == "Productor") {
-                producitElemento();
-            } else {
-                try {
-                    Thread.sleep(velocidadProduccion);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            if ("Productor".equals(nombre)) {
+                producirElemento();
             }
-            // Generar un elemento (simplemente usando el valor de recurso para este ejemplo)
-//            int elemento = generarElemento();
-
-            // Producir el elemento en el recurso compartido
-//            recursoCompartido.producir(elemento);
-//            producirElemento(elemento);
-            // Actualizar atributos
-            // Esperar un tiempo antes de producir el siguiente elemento
-//            try {
-//                Thread.sleep(velocidadProduccion);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 
-    private void producitElemento() {
-        synchronized (estado) {
-            if (getRecurso() == 0) {
-                setRecurso(10);
-                System.out.println("Soy el cocinero y quedan " + getRecurso() + ".");
-                estado.notifyAll();
-            }
+    public void producirElemento() {
+        while (recursoCompartido.estaVacio()) {
+            if (!recursoCompartido.estaVacio()) {
+                productorDormido();
+//                    System.out.println("Productor Dormido");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Productor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else if (recursoCompartido.estaVacio()) {
+                productorDespierto();
+//                System.out.println("Productor Despierto!!!");
+                while (productorDespierto && recursoCompartido.espacioDisponible()) {
+                    int elemento = recursoCompartido.producir();
+                    System.out.println("Productor produjo: " + elemento);
 
-            try {
-                estado.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Productor.class.getName()).log(Level.SEVERE, null, ex);
+                    if (!recursoCompartido.espacioDisponible()) {
+                        productorDormido();
+//                        System.out.println("Productor Dormido!!!");
+                    }
+                }
             }
-
         }
+    }
+
+    public void productorDormido() {
+        productorDespierto = false;
+        System.out.println("Productor Dormido!!!");
+    }
+
+    public void productorDespierto() {
+        productorDespierto = true;
+        System.out.println("Productor Despierto!!!");
+    }
+
+    public boolean isProductorDespierto() {
+        return productorDespierto;
     }
 
 }
