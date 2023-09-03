@@ -1,31 +1,24 @@
 package Backend;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Random;
 
 public class Productor implements Runnable {
+//  Atributos
 
-    // Variables
     private String nombre = "Productor";
-    private int velocidadProduccion;
     private Recurso recursoCompartido;
-    private boolean productorDespierto = true;
+    private boolean productorDespierto;
+    private Random random = new Random();
+    private Consumidor consumidor;
+    private boolean detenerHilo;
 
-    //Setters / Getters
+//  Setters / Getters
     public String getNombre() {
         return nombre;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getVelocidadProduccion() {
-        return velocidadProduccion;
-    }
-
-    public void setVelocidadProduccion(int velocidadProduccion) {
-        this.velocidadProduccion = velocidadProduccion;
     }
 
     public Recurso getRecursoCompartido() {
@@ -36,54 +29,53 @@ public class Productor implements Runnable {
         this.recursoCompartido = recursoCompartido;
     }
 
-    // Métodos
-    @Override
-    public void run() {
-        while (true) {
-            if ("Productor".equals(nombre)) {
-                producirElemento();
-            }
-        }
+    public Productor(Recurso recursoCompartido) {
+        this.recursoCompartido = recursoCompartido;
+        this.detenerHilo = false; // Inicialmente no detener el hilo
+
     }
 
-    public void producirElemento() {
-        while (recursoCompartido.estaVacio()) {
-            if (!recursoCompartido.estaVacio()) {
-                productorDormido();
-//                    System.out.println("Productor Dormido");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Productor.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } else if (recursoCompartido.estaVacio()) {
-                productorDespierto();
-//                System.out.println("Productor Despierto!!!");
-                while (productorDespierto && recursoCompartido.espacioDisponible()) {
+//  Metodos
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted() && !detenerHilo) {
+            try {
+                estadoProductor();
+                while (true) {
+
                     int elemento = recursoCompartido.producir();
                     System.out.println("Productor produjo: " + elemento);
 
                     if (!recursoCompartido.espacioDisponible()) {
-                        productorDormido();
-//                        System.out.println("Productor Dormido!!!");
+                        System.out.println("Esta Lleno!!!");
+                        Thread.sleep(dormirProductor());
+                        break; // Salir del ciclo interno para dormirse
                     }
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
-
-    public void productorDormido() {
-        productorDespierto = false;
-        System.out.println("Productor Dormido!!!");
+    
+    public void detenerHilo() {
+        detenerHilo = true;
     }
 
-    public void productorDespierto() {
-        productorDespierto = true;
-        System.out.println("Productor Despierto!!!");
-    }
-
-    public boolean isProductorDespierto() {
+    public boolean estadoProductor() {
+        if (recursoCompartido.estaVacio() || recursoCompartido.espacioDisponible()) {
+            System.out.println("Productor DESPIERTO!!!");
+            productorDespierto = true;
+        } else {
+            System.out.println("Productor DORMIDO!!!");
+            productorDespierto = false;
+        }
         return productorDespierto;
     }
 
+    public int dormirProductor() {
+        System.out.println("El productor se durmio un rato XD");
+        productorDespierto = false;
+        return random.nextInt(7000) + 3000;
+    }
 }

@@ -1,31 +1,26 @@
+
 package Backend;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Random;
 
 public class Consumidor implements Runnable {
-
-    //Variables
+//  Atributos
     private String nombre = "Consumidor";
-    private int velocidadConsumo;
     private Recurso recursoCompartido;
-    private boolean consumidorDespierto = true;
+    private boolean consumidorDespierto;
+    private Random random = new Random();
 
-    //Setters/Getters
+    public Consumidor(Recurso recursoCompartido) {
+        this.recursoCompartido = recursoCompartido;
+    }
+    
+//  Setters/Getters
     public String getNombre() {
         return nombre;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public int getVelocidadConsumo() {
-        return velocidadConsumo;
-    }
-
-    public void setVelocidadConsumo(int velocidadConsumo) {
-        this.velocidadConsumo = velocidadConsumo;
     }
 
     public Recurso getRecursoCompartido() {
@@ -36,45 +31,44 @@ public class Consumidor implements Runnable {
         this.recursoCompartido = recursoCompartido;
     }
 
-    //Metodos
+//  Metodos
     @Override
     public void run() {
-        while(true) {
-        if ("Consumidor".equals(nombre)) {
-                consumirElementosHastaVacio();
-                dormirHastaProductorDespierto();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                int tiempoDeEspera = dormirConsumidor();
+                Thread.sleep(tiempoDeEspera);
+                
+                if (recursoCompartido.hayElementos()) {
+                    if(estadoConsumidor() == true){
+                    
+                    int elemento = recursoCompartido.consumir();
+                    System.out.println("Consumidor consumio: " + elemento);
+                    
+                    }
+                } else {
+                    estadoConsumidor();
+                    Thread.sleep(2000); // Tiempo de dormir antes de revisar nuevamente
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-        }     
-    }
-    
-    public void consumirElementosHastaVacio() {
-        while (!recursoCompartido.estaVacio()) {
-            consumidorDespierto();
-            int elemento = recursoCompartido.consumir();
-            System.out.println("Consumidor consumio: " + elemento);
         }
-    }
-    
-    public void dormirHastaProductorDespierto() {
-        while (recursoCompartido.hayElementos() || recursoCompartido.espacioDisponible()) {
-            consumidorDormido();
-            break;
-        }
-    }
-    
-    public void consumidorDormido() {
-        consumidorDespierto = false;
-        System.out.println("Consumidor Dormido!!!");
     }
 
-    public void consumidorDespierto() {
-        consumidorDespierto = true;
-        System.out.println("Consumidor Despierto!!!");
-    }
-    
-    public boolean isConsumidorDespierto(){
+    public boolean estadoConsumidor() {
+       
+        if(recursoCompartido.hayElementos()){
+            System.out.println("Consumidor DESPIERTO!!");
+            consumidorDespierto = true;
+        } else {
+            System.out.println("Consumidor DORMIDO!!");
+            consumidorDespierto = false;
+        }
         return consumidorDespierto;
     }
+    
+    public int dormirConsumidor(){
+        return random.nextInt(7000) + 3000; 
+    }
 }
-
-

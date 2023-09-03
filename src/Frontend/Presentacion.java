@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import java.applet.AudioClip;
 
 public class Presentacion extends javax.swing.JFrame {
 
@@ -12,6 +13,9 @@ public class Presentacion extends javax.swing.JFrame {
     public Presentacion() {
         this.setContentPane(fondo);
         initComponents();
+        AudioClip Sound;
+        Sound = java.applet.Applet.newAudioClip(getClass().getResource("/Musica/ScoobyDooSong.wav"));
+        Sound.play();
     }
 
     @SuppressWarnings("unchecked")
@@ -122,5 +126,4 @@ public class Presentacion extends javax.swing.JFrame {
             super.paint(g);
         }
     }
-
 }

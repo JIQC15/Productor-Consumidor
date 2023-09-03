@@ -3,12 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Frontend/Presentacion.java</file>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Backend/MainTemporal.java</file>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Frontend/InterfazGrafica.java</file>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Backend/Recurso.java</file>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Backend/Productor.java</file>
-            <file>file:/C:/Users/PC%20REINDEER/Documents/NetBeansProjects/Productor-Consumidor/src/Backend/Consumidor.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Backend/Recurso.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Backend/Productor.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Frontend/EspacioLabel.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Backend/MainTemporal.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Frontend/InterfazGrafica.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Frontend/Presentacion.java</file>
+            <file>file:/F:/Productor-Consumidor%202.0/src/Backend/Consumidor.java</file>
         </group>
     </open-files>
 </project-private>
