@@ -16,10 +16,11 @@ import javax.swing.SwingUtilities;
 public class InterfazGrafica extends javax.swing.JFrame {
 
     ImageIcon imagenDormidoProductor = new ImageIcon(getClass().getResource("/IMG/ShaggyDormido.jpg"));
-    ImageIcon imagenDespiertoProductor = new ImageIcon(getClass().getResource("/IMG/ShaggyCocinero.jpg"));
+    ImageIcon imagenProductorEsperando = new ImageIcon(getClass().getResource("/IMG/ShaggyCocinero.jpg"));
     ImageIcon imagenDormidoConsumidor = new ImageIcon(getClass().getResource("/IMG/ScoobyDormido.jpg"));
     ImageIcon imagenDespiertoConsumidor = new ImageIcon(getClass().getResource("/IMG/ScoobyConsumidor.jpg"));
     ImageIcon imagenRecursoCompartido = new ImageIcon(getClass().getResource("/IMG/Pizza.png"));
+    ImageIcon imagenProductorDespierto = new ImageIcon(getClass().getResource("/IMG/ShaggyEsperando.png"));
 
     public Recurso recursoCompartido;
     public Productor productor;
@@ -28,6 +29,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
     public boolean detener;
     public List<EspacioLabel> procesosConVista;
     private int indiceSiguienteLabel = 0;
+    private int indiceSiguienteConsumir = 0;
+    private volatile boolean detenerHilos = false;
 
     public InterfazGrafica() {
 
@@ -157,10 +160,10 @@ public class InterfazGrafica extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblProceso4, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblProceso5, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(lblProceso2, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblProceso3, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblProceso5, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblProceso1, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(64, 64, 64))
         );
@@ -182,11 +185,12 @@ public class InterfazGrafica extends javax.swing.JFrame {
 
     private void btnEmpezarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEmpezarActionPerformed
         iniciarProductor();
-//        iniciarConsumidor();
+        iniciarConsumidor();
     }//GEN-LAST:event_btnEmpezarActionPerformed
 
     private void btnDetenerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDetenerActionPerformed
-//        detener();
+        detenerHilos = true;
+
     }//GEN-LAST:event_btnDetenerActionPerformed
 
     public static void main(String args[]) {
@@ -223,10 +227,11 @@ public class InterfazGrafica extends javax.swing.JFrame {
 
     //Metodos:
     public void iniciarProductor() {
-        Thread productorThread = new Thread(() -> {
-            int indice = 0;
 
+        Thread productorThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
+                
+//                productor.estadoProductor();
 
                 lblEstadoProductor.setText("DORMIDO");
                 lblEstadoProductor.setForeground(Color.RED);
@@ -234,27 +239,26 @@ public class InterfazGrafica extends javax.swing.JFrame {
                 lblIMGEstadoProductor.setIcon(imagenDormidoProductor);
 
                 actualizarInterfazProductor(); // Actualizar la interfaz en función del estado actual
+
                 if (productor.estadoProductor() == true) {
                     try {
+                        int tiempoDeEsperaProductor = productor.dormirProductor();
+                        
                         productor.estadoProductor();
                         while (true) {
-                            int elemento = recursoCompartido.producir();
                             interfazProduciendo();
-                            System.out.println("Productor produjo el elemento: " + elemento);
-                            productor.estadoProductor();
 
+                            int elemento = recursoCompartido.producir();
+//                            interfazProduciendo();
+                            System.out.println("Productor produjo el elemento: " + elemento);
+                            actualizarLabels();
+
+//                            productor.estadoProductor();
                             if (!recursoCompartido.espacioDisponible()) {
                                 System.out.println("Esta Lleno!!!");
-                                Thread.sleep(productor.dormirProductor());
+                                Thread.sleep(tiempoDeEsperaProductor);
                                 actualizarInterfazProductor();
                                 break; // Salir del ciclo interno para dormirse
-                            } else {
-                                actualizarLabels();
-//                                indice++;
-//                                if (indice >= procesosConVista.size()) {
-//                                    // Si el índice supera el tamaño de la lista, reinícialo a 0
-//                                    indice = 0;
-//                                }
                             }
                         }
                     } catch (InterruptedException e) {
@@ -262,31 +266,34 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     }
 
                 } else {
-                    productor.detenerHilo();
+                    lblEstadoProductor.setText("ESPERANDO");
+                    lblEstadoProductor.setForeground(Color.ORANGE);
+                    lblEstadoProductor.setFont(lblEstadoProductor.getFont().deriveFont(Font.BOLD));
+                    lblIMGEstadoProductor.setIcon(imagenProductorDespierto);
                 }
                 try {
-                    Thread.sleep(1000); // Esperar un tiempo antes de volver a verificar el estado
+                    Thread.sleep(2000); // Esperar un tiempo antes de volver a verificar el estado
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
         });
-
         productorThread.start();
     }
 
     public void iniciarConsumidor() {
         Thread consumidorThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
+
                 lblEstadoConsumidor.setText("DORMIDO");
                 lblEstadoConsumidor.setForeground(Color.RED);
                 lblEstadoConsumidor.setFont(lblEstadoProductor.getFont().deriveFont(Font.BOLD));
                 lblIMGEstadoConsumidor.setIcon(imagenDormidoConsumidor);
-                
+
                 actualizarInterfazConsumidor();
                 try {
-                    int tiempoDeEspera = consumidor.dormirConsumidor();
-                    Thread.sleep(tiempoDeEspera);
+                    int tiempoDeEsperaConsumidor = consumidor.dormirConsumidor();
+                    Thread.sleep(tiempoDeEsperaConsumidor);
 
                     if (recursoCompartido.hayElementos()) {
                         if (consumidor.estadoConsumidor() == true) {
@@ -294,19 +301,26 @@ public class InterfazGrafica extends javax.swing.JFrame {
                             interfazConsumiendo();
                             int elemento = recursoCompartido.consumir();
                             System.out.println("Consumidor consumio: " + elemento);
+                            consumirLabel(indiceSiguienteConsumir);
 
+                            // Incrementa el índice para el próximo JLabel a consumir
+                            indiceSiguienteConsumir++;
+
+                            // Si alcanzamos el último JLabel, volvemos al primero
+                            if (indiceSiguienteConsumir >= 5) {
+                                indiceSiguienteConsumir = 0;
+                            }
                         }
                     } else {
                         consumidor.estadoConsumidor();
                         actualizarInterfazConsumidor();
-                        Thread.sleep(2000); // Tiempo de dormir antes de revisar nuevamente
+                        Thread.sleep(tiempoDeEsperaConsumidor); // Tiempo de dormir antes de revisar nuevamente
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
         });
-
         consumidorThread.start();
     }
 
@@ -320,6 +334,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
         lblEstadoProductor.setText("PRODUCIENDO");
         lblEstadoProductor.setForeground(Color.YELLOW);
         lblEstadoProductor.setFont(lblEstadoProductor.getFont().deriveFont(Font.BOLD));
+        lblIMGEstadoProductor.setIcon(imagenProductorEsperando);
+
     }
 
     public void actualizarInterfazProductor() {
@@ -328,7 +344,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                 lblEstadoProductor.setText("DESPIERTO");
                 lblEstadoProductor.setForeground(Color.GREEN);
                 lblEstadoProductor.setFont(lblEstadoProductor.getFont().deriveFont(Font.BOLD));
-                lblIMGEstadoProductor.setIcon(imagenDespiertoProductor);
+                lblIMGEstadoProductor.setIcon(imagenProductorDespierto);
             } else {
                 lblEstadoProductor.setText("DORMIDO");
                 lblEstadoProductor.setForeground(Color.RED);
@@ -374,9 +390,24 @@ public class InterfazGrafica extends javax.swing.JFrame {
             indiceSiguienteLabel++;
 
             // Si alcanzamos el último JLabel, volvemos al primero
-            if (indiceSiguienteLabel > 6) {
+            if (indiceSiguienteLabel >= 5) {
                 indiceSiguienteLabel = 0;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void consumirLabel(int indice) {
+        // Utiliza el índice para determinar el nombre del JLabel
+        String labelName = "lblProceso" + (indice + 1);
+
+        try {
+            java.lang.reflect.Field field = getClass().getDeclaredField(labelName);
+            JLabel lbl = (JLabel) field.get(this);
+
+            // Elimina la imagen del JLabel
+            lbl.setIcon(null);
         } catch (Exception e) {
             e.printStackTrace();
         }

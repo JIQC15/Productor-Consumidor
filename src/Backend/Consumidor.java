@@ -59,10 +59,10 @@ public class Consumidor implements Runnable {
     public boolean estadoConsumidor() {
        
         if(recursoCompartido.hayElementos()){
-            System.out.println("Consumidor DESPIERTO!!");
+//            System.out.println("Consumidor DESPIERTO!!");
             consumidorDespierto = true;
         } else {
-            System.out.println("Consumidor DORMIDO!!");
+//            System.out.println("Consumidor DORMIDO!!");
             consumidorDespierto = false;
         }
         return consumidorDespierto;
@@ -72,3 +72,64 @@ public class Consumidor implements Runnable {
         return random.nextInt(7000) + 3000; 
     }
 }
+
+//NUEVA OPCION
+//package Backend;
+//
+//import java.util.Random;
+//
+//public class Consumidor implements Runnable {
+//    private String nombre = "Consumidor";
+//    private Recurso recursoCompartido;
+//    private boolean consumidorDespierto;
+//    private Random random = new Random();
+//
+//    public Consumidor(Recurso recursoCompartido) {
+//        this.recursoCompartido = recursoCompartido;
+//    }
+//
+//    @Override
+//    public void run() {
+//        while (!Thread.currentThread().isInterrupted()) {
+//            try {
+//                int tiempoDeEspera = dormirConsumidor();
+//                Thread.sleep(tiempoDeEspera);
+//
+//                if (recursoCompartido.hayElementos()) {
+//                    if (estadoConsumidor()) {
+//                        int elemento = recursoCompartido.consumir();
+//                        System.out.println("Consumidor consumió: " + elemento);
+//                    }
+//                } else {
+//                    estadoConsumidor();
+//                    synchronized (recursoCompartido) {
+//                        if (recursoCompartido.estaVacio()) {
+//                            System.out.println("Consumidor DORMIDO!!!");
+//                            recursoCompartido.wait(); // Esperar hasta que se reanude
+//                        }
+//                    }
+//                }
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+//    
+//    public boolean estadoConsumidor() {
+//       
+//        if(recursoCompartido.hayElementos()){
+//            System.out.println("Consumidor DESPIERTO!!");
+//            consumidorDespierto = true;
+//        } else {
+//            System.out.println("Consumidor DORMIDO!!");
+//            consumidorDespierto = false;
+//        }
+//        return consumidorDespierto;
+//    }
+//    
+//    public int dormirConsumidor(){
+//        return random.nextInt(7000) + 3000; 
+//    }
+//
+//    // Resto del código
+//}

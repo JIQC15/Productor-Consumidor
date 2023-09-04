@@ -64,10 +64,10 @@ public class Productor implements Runnable {
 
     public boolean estadoProductor() {
         if (recursoCompartido.estaVacio() || recursoCompartido.espacioDisponible()) {
-            System.out.println("Productor DESPIERTO!!!");
+//            System.out.println("Productor DESPIERTO!!!");
             productorDespierto = true;
         } else {
-            System.out.println("Productor DORMIDO!!!");
+//            System.out.println("Productor DORMIDO!!!");
             productorDespierto = false;
         }
         return productorDespierto;

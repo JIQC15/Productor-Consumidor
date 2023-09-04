@@ -1,15 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package Frontend;
 
 import javax.swing.JLabel;
 
-/**
- *
- * @author Dell
- */
 public class EspacioLabel{
     private boolean lleno;
     private final int id;
@@ -19,7 +12,6 @@ public class EspacioLabel{
         this.lleno = lleno;
         this.id = id;
         this.label = label;
-        //as
     }
 
     public JLabel getLabel() {
